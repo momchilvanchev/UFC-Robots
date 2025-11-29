@@ -21,32 +21,28 @@ var current_layer_activations_uniform : RDUniform
 var current_layer_biases_uniform : RDUniform
 var current_layer_weights_uniform : RDUniform
 
-var uniform_set
+var uniform_set : RID
 
 func feed_forward(input : PackedFloat32Array) -> PackedFloat32Array:
 	if input.size() != layers[0]:
 		push_error("Input size does not match input layer size.")
 		return input
 	
+	input.insert(0, input.size()) # Add the input size to the first index of the previous_layer_activations_buffer
+	print("input: ", input)
 	# --- Copy input into previous_layer_activations_buffer ---
-	var input_bytes := input.to_byte_array()
+	var input_bytes : PackedByteArray = input.to_byte_array()
 	Global.rendering_device.buffer_update(
 		previous_layer_activations_buffer,
 		0,                     # offset
 		input_bytes.size(),    # size in bytes
 		input_bytes            # data
-	)	
-	var current_layer_activations : PackedFloat32Array
-	var layer_index : int = 0
-	while layer_index < layers.size():
-		if layer_index != 0:
-			var previous_layer_activations_bytes : PackedByteArray = current_layer_activations.to_byte_array()
-			Global.rendering_device.buffer_update(
-				previous_layer_activations_buffer,
-				0,
-				previous_layer_activations_bytes.size(),
-				previous_layer_activations_bytes
-			)
+	)
+	var final_output : PackedFloat32Array
+	## Note: Code below is a bit hard to understand and maintain,
+	## owing to the fact that biases[] and weights[] do not contain the input layer
+	## however layers[] does
+	for layer_index in range(0, layers.size() - 1): # -1 because input layer does not get computed and isn't included in biases[] and weights[]
 		var current_layer_biases_bytes : PackedByteArray = PackedFloat32Array(biases[layer_index]).to_byte_array()
 		Global.rendering_device.buffer_update(
 			current_layer_biases_buffer,
@@ -54,26 +50,59 @@ func feed_forward(input : PackedFloat32Array) -> PackedFloat32Array:
 			current_layer_biases_bytes.size(),
 			current_layer_biases_bytes
 		)
-		var _2d_weights_array : Array = weights[layer_index]
+		var _2d_layer_weights_array : Array = weights[layer_index]
 		var flattened_weights : PackedFloat32Array = PackedFloat32Array()
+		for neuron_weights in _2d_layer_weights_array:
+			for weight in neuron_weights:
+				flattened_weights.append(weight)
+		var current_layer_weights_bytes : PackedByteArray = flattened_weights.to_byte_array()
+		Global.rendering_device.buffer_update(
+			current_layer_weights_buffer,
+			0,
+			current_layer_weights_bytes.size(),
+			current_layer_weights_bytes
+		)
+		# --- Dispatch compute shader ---
+		var compute_list := Global.rendering_device.compute_list_begin()
+		Global.rendering_device.compute_list_bind_compute_pipeline(compute_list, Global.pipeline)
+		Global.rendering_device.compute_list_bind_uniform_set(compute_list, uniform_set, 0) # set = 0
+		Global.rendering_device.compute_list_dispatch(compute_list, layers[layer_index + 1], 1, 1)
+		Global.rendering_device.compute_list_end()
+		Global.rendering_device.submit()
+		Global.rendering_device.sync() # wait until done
+		var current_layer_activations_bytes : PackedByteArray = Global.rendering_device.buffer_get_data(current_layer_activations_buffer)
+		var current_layer_activations : PackedFloat32Array = current_layer_activations_bytes.to_float32_array()
+		current_layer_activations[0] = layers[layer_index + 1] # set the first index to show the now previous_layer_activations array length
+		print("Layer ", layer_index, ": compute output: ", current_layer_activations)
+		var new_previous_layer_activations_bytes = current_layer_activations.to_byte_array()
+		Global.rendering_device.buffer_update(
+			previous_layer_activations_buffer,
+			0,
+			new_previous_layer_activations_bytes.size(),
+			new_previous_layer_activations_bytes
+		)
+		if layer_index == layers.size() - 2: # If final loop, set final_output
+			print(layers[layer_index + 1])
+			final_output = current_layer_activations.slice(1, layers[layer_index + 1] + 1)
 		
-		#var flattened_weights : PackedFloat32Array
-	return input
-
+	return final_output
 func init_compute_pipeline() -> void:
 	# Determine maximum layer size (for activations/biases)
 	var max_layer_size := 0
 	for layer in layers:
 		if layer > max_layer_size:
 			max_layer_size = layer
-	var max_layer_size_bytes := max_layer_size * 4
-	var empty_data := PackedByteArray()
-	empty_data.resize(max_layer_size_bytes)
 
-	# Allocate activation & bias buffers
-	previous_layer_activations_buffer = Global.rendering_device.storage_buffer_create(max_layer_size_bytes, empty_data)
-	current_layer_activations_buffer = Global.rendering_device.storage_buffer_create(max_layer_size_bytes, empty_data)
-	current_layer_biases_buffer = Global.rendering_device.storage_buffer_create(max_layer_size_bytes, empty_data)
+	# account for stored length at index 0 => +1 element
+	var activation_elements := max_layer_size + 1
+	var activation_bytes := activation_elements * 4  # 4 bytes per float
+	var empty_data := PackedByteArray()
+	empty_data.resize(activation_bytes)
+
+	# Allocate activation & bias buffers with properly sized initial data
+	previous_layer_activations_buffer = Global.rendering_device.storage_buffer_create(activation_bytes, empty_data)
+	current_layer_activations_buffer = Global.rendering_device.storage_buffer_create(activation_bytes, empty_data)
+	current_layer_biases_buffer = Global.rendering_device.storage_buffer_create(activation_bytes, empty_data)
 
 	# Compute maximum number of weights across all layers
 	var max_weights := 0
@@ -120,6 +149,8 @@ func init_compute_pipeline() -> void:
 		Global.shader,
 		0 # set = 0
 	)
+	
+	print("- FFNN Compute Pipeline Initialised")
 	
 func generate_random_network(layers_in : PackedInt32Array) -> void:
 	if layers_in.size() < 3:
