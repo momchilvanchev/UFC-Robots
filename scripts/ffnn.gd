@@ -27,11 +27,11 @@ func feed_forward(input : PackedFloat32Array) -> PackedFloat32Array:
 	if input.size() != layers[0]:
 		push_error("Input size does not match input layer size.")
 		return input
-	
-	input.insert(0, input.size()) # Add the input size to the first index of the previous_layer_activations_buffer
+	var input_copy : PackedFloat32Array = input.duplicate()
+	input_copy.insert(0, input_copy.size()) # Add the input size to the first index of the previous_layer_activations_buffer
 	#print("input: ", input)
 	# --- Copy input into previous_layer_activations_buffer ---
-	var input_bytes : PackedByteArray = input.to_byte_array()
+	var input_bytes : PackedByteArray = input_copy.to_byte_array()
 	Global.rendering_device.buffer_update(
 		previous_layer_activations_buffer,
 		0,                     # offset
@@ -149,8 +149,6 @@ func init_compute_pipeline() -> void:
 		0 # set = 0
 	)
 	
-	print("- FFNN Compute Pipeline Initialised")
-	
 func generate_random_network(layers_in : PackedInt32Array, multiplier : float = 0.2) -> void:
 	if layers_in.size() < 3:
 		push_error("Need at least 3 layers: input, hidden, output.")
@@ -186,7 +184,7 @@ func generate_random_network(layers_in : PackedInt32Array, multiplier : float = 
 		biases.append(layer_biases)
 
 	#print("weights:", weights)
-	print("biases:", biases)
+	#print("biases:", biases)
 	#print("layers: ", layers)
 
 
@@ -206,6 +204,27 @@ func mutate_network(mutation_rate : float = 0.01, mutation_chance: float = 0.1) 
 					var mutation_delta = randf_range(-1, 1) * mutation_rate
 					weights[weights_layer_index][neuron_weights_layer_index][weight_index] += mutation_delta
 					weights[weights_layer_index][neuron_weights_layer_index][weight_index] = clamp(weights[weights_layer_index][neuron_weights_layer_index][weight_index], -1, 1)
-	print("mutated biases: ", biases)
-	print("mutated weights: ", weights)
+	#print("mutated biases: ", biases)
+	#print("mutated weights: ", weights)
 	return
+
+func copy_from(other: FeedForwardNeuralNetwork, do_compute_pipeline_initialisation : bool = true) -> void:
+	var architecture_changed := layers != other.layers
+	
+	# --- Copy layers ---
+	layers = other.layers.duplicate()
+
+	# --- Deep copy biases (2D array) ---
+	biases = []
+	for bias_layer in other.biases:
+		biases.append(bias_layer.duplicate())
+
+	# --- Deep copy weights (3D array) ---
+	weights = []
+	for weight_layer in other.weights:
+		var new_weight_layer : Array = []
+		for neuron_weights in weight_layer:
+			new_weight_layer.append(neuron_weights.duplicate())
+		weights.append(new_weight_layer)
+	if do_compute_pipeline_initialisation or architecture_changed:
+		init_compute_pipeline()
