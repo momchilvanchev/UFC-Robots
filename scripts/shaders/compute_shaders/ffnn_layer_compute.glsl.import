@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://52pq88r3k4em"
+path="res://.godot/imported/ffnn_layer_compute.glsl-5c81c8a8bb5ccaab09cc7582c9ed7210.res"
+
+[deps]
+
+source_file="res://scripts/shaders/compute_shaders/ffnn_layer_compute.glsl"
+dest_files=["res://.godot/imported/ffnn_layer_compute.glsl-5c81c8a8bb5ccaab09cc7582c9ed7210.res"]
+
+[params]
+

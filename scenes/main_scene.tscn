@@ -1,0 +1,10 @@
+[gd_scene load_steps=4 format=3 uid="uid://bd23vw3q3ggam"]
+
+[ext_resource type="Script" uid="uid://ujkaaswy4mdi" path="res://scripts/main_scene.gd" id="1_w2twt"]
+[ext_resource type="PackedScene" uid="uid://6gnbnrcflss6" path="res://scenes/maps/arena_0.tscn" id="2_pw63i"]
+[ext_resource type="PackedScene" uid="uid://cvbrqhljosfog" path="res://scenes/fighter.tscn" id="3_7ykc4"]
+
+[node name="MainScene" type="Node3D"]
+script = ExtResource("1_w2twt")
+map_scene_link = ExtResource("2_pw63i")
+fighter_scene_link = ExtResource("3_7ykc4")
