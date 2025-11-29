@@ -1,7 +1,7 @@
 extends Node
 ### Simple feed forward neural network implementation
 ### Note: All inputs and outputs are normalised between -1 and 1
-### It is expected of you to normalise your inputs between -1 and 1
+### It is that your inputs are between -1 and 1
 class_name FeedForwardNeuralNetwork
 
 # weights[layer][neuron][incoming_weight]
@@ -29,7 +29,7 @@ func feed_forward(input : PackedFloat32Array) -> PackedFloat32Array:
 		return input
 	
 	input.insert(0, input.size()) # Add the input size to the first index of the previous_layer_activations_buffer
-	print("input: ", input)
+	#print("input: ", input)
 	# --- Copy input into previous_layer_activations_buffer ---
 	var input_bytes : PackedByteArray = input.to_byte_array()
 	Global.rendering_device.buffer_update(
@@ -50,9 +50,9 @@ func feed_forward(input : PackedFloat32Array) -> PackedFloat32Array:
 			current_layer_biases_bytes.size(),
 			current_layer_biases_bytes
 		)
-		var _2d_layer_weights_array : Array = weights[layer_index]
+		var _3d_layer_weights_array : Array = weights[layer_index]
 		var flattened_weights : PackedFloat32Array = PackedFloat32Array()
-		for neuron_weights in _2d_layer_weights_array:
+		for neuron_weights in _3d_layer_weights_array:
 			for weight in neuron_weights:
 				flattened_weights.append(weight)
 		var current_layer_weights_bytes : PackedByteArray = flattened_weights.to_byte_array()
@@ -73,7 +73,7 @@ func feed_forward(input : PackedFloat32Array) -> PackedFloat32Array:
 		var current_layer_activations_bytes : PackedByteArray = Global.rendering_device.buffer_get_data(current_layer_activations_buffer)
 		var current_layer_activations : PackedFloat32Array = current_layer_activations_bytes.to_float32_array()
 		current_layer_activations[0] = layers[layer_index + 1] # set the first index to show the now previous_layer_activations array length
-		print("Layer ", layer_index, ": compute output: ", current_layer_activations)
+		#print("Layer ", layer_index, ": compute output: ", current_layer_activations)
 		var new_previous_layer_activations_bytes = current_layer_activations.to_byte_array()
 		Global.rendering_device.buffer_update(
 			previous_layer_activations_buffer,
@@ -82,7 +82,6 @@ func feed_forward(input : PackedFloat32Array) -> PackedFloat32Array:
 			new_previous_layer_activations_bytes
 		)
 		if layer_index == layers.size() - 2: # If final loop, set final_output
-			print(layers[layer_index + 1])
 			final_output = current_layer_activations.slice(1, layers[layer_index + 1] + 1)
 		
 	return final_output
@@ -152,7 +151,7 @@ func init_compute_pipeline() -> void:
 	
 	print("- FFNN Compute Pipeline Initialised")
 	
-func generate_random_network(layers_in : PackedInt32Array) -> void:
+func generate_random_network(layers_in : PackedInt32Array, multiplier : float = 0.2) -> void:
 	if layers_in.size() < 3:
 		push_error("Need at least 3 layers: input, hidden, output.")
 		return
@@ -174,12 +173,12 @@ func generate_random_network(layers_in : PackedInt32Array) -> void:
 
 		for _neuron in range(current_count):
 			# random bias
-			layer_biases.append(randf_range(-1, 1))
+			layer_biases.append(randf_range(-1, 1) * multiplier)
 
 			# weights for this neuron
 			var neuron_weights : Array = []
 			for _w in range(previous_count):
-				neuron_weights.append(randf_range(-1, 1))
+				neuron_weights.append(randf_range(-1, 1) * multiplier)
 
 			layer_weights.append(neuron_weights)
 
@@ -191,5 +190,22 @@ func generate_random_network(layers_in : PackedInt32Array) -> void:
 	#print("layers: ", layers)
 
 
-func mutate_network(mutation_rate : float) -> void:
+func mutate_network(mutation_rate : float = 0.01, mutation_chance: float = 0.1) -> void:
+	for bias_layer_index in range(biases.size()):
+		for bias_index in range(biases[bias_layer_index].size()):
+			var mutate_probability : float = randf()
+			if mutate_probability < mutation_chance:
+				var mutation_delta = randf_range(-1, 1) * mutation_rate
+				biases[bias_layer_index][bias_index] += mutation_delta
+				biases[bias_layer_index][bias_index] = clamp(biases[bias_layer_index][bias_index], -1, 1)
+	for weights_layer_index in range(weights.size()):
+		for neuron_weights_layer_index in range(weights[weights_layer_index].size()):
+			for weight_index in range(weights[weights_layer_index][neuron_weights_layer_index].size()):
+				var mutate_probability : float = randf()
+				if mutate_probability < mutation_chance:
+					var mutation_delta = randf_range(-1, 1) * mutation_rate
+					weights[weights_layer_index][neuron_weights_layer_index][weight_index] += mutation_delta
+					weights[weights_layer_index][neuron_weights_layer_index][weight_index] = clamp(weights[weights_layer_index][neuron_weights_layer_index][weight_index], -1, 1)
+	print("mutated biases: ", biases)
+	print("mutated weights: ", weights)
 	return

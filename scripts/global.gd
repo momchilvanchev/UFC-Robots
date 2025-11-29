@@ -11,13 +11,13 @@ var shader : RID
 var pipeline : RID
 func _ready() -> void:
 	rendering_device = create_new_rendering_device()
-	print(rendering_device)
+	#print(rendering_device)
 	shader_file = load("res://scripts/shaders/compute_shaders/ffnn_layer_compute.glsl")
-	print(shader_file)
+	#print(shader_file)
 	shader_spirv = shader_file.get_spirv()
-	print(shader_spirv)
+	#print(shader_spirv)
 	shader = rendering_device.shader_create_from_spirv(shader_spirv)
-	print(shader)
+	#print(shader)
 	pipeline = rendering_device.compute_pipeline_create(shader)
 	print("- Global Singleton Loaded")
 
