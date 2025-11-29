@@ -41,5 +41,5 @@ void main() {
 	// Add bias
 	sum += current_layer_biases.biases[id];
 
-	current_layer_activations.activations[id] = tahn(sum);
+	current_layer_activations.activations[id] = tanh(sum);
 }
