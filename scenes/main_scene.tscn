@@ -1,15 +1,34 @@
-[gd_scene load_steps=5 format=3 uid="uid://bd23vw3q3ggam"]
+[gd_scene load_steps=7 format=3 uid="uid://bd23vw3q3ggam"]
 
 [ext_resource type="Script" uid="uid://ujkaaswy4mdi" path="res://scripts/main_scene.gd" id="1_w2twt"]
 [ext_resource type="PackedScene" uid="uid://6gnbnrcflss6" path="res://scenes/maps/arena_0.tscn" id="2_pw63i"]
 [ext_resource type="PackedScene" uid="uid://cvbrqhljosfog" path="res://scenes/fighter.tscn" id="3_7ykc4"]
 [ext_resource type="Script" uid="uid://dhk6of5qrutah" path="res://scripts/evolution_manager.gd" id="4_pu3yx"]
 
+[sub_resource type="Resource" id="Resource_7ykc4"]
+metadata/__load_path__ = "res://scenes/fighter.gd"
+
+[sub_resource type="PackedScene" id="PackedScene_pu3yx"]
+_bundled = {
+"conn_count": 0,
+"conns": PackedInt32Array(),
+"editable_instances": [],
+"names": PackedStringArray("Fighter", "Node3D", "script"),
+"node_count": 1,
+"node_paths": [],
+"nodes": PackedInt32Array(-1, -1, 1, 0, -1, 1, 2, 0, 0),
+"variants": [SubResource("Resource_7ykc4")],
+"version": 3
+}
+
 [node name="MainScene" type="Node3D"]
 script = ExtResource("1_w2twt")
 map_scene_link = ExtResource("2_pw63i")
-fighter_scene_link = ExtResource("3_7ykc4")
+fighter_scene_link = SubResource("PackedScene_pu3yx")
 
 [node name="EvolutionManager" type="Node" parent="."]
 script = ExtResource("4_pu3yx")
+fighter_scene = ExtResource("3_7ykc4")
+mutation_chance = 1.0
+multiplier_weights_and_biases = 0.1
 metadata/_custom_type_script = "uid://dhk6of5qrutah"

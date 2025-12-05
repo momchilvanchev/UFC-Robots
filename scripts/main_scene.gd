@@ -4,8 +4,6 @@ extends Node3D
 @export var fighter_scene_link : PackedScene
 
 var map_scene : Node3D
-var fighter1 : Node3D
-var fighter2 : Node3D
 
 func _ready() -> void:
 	map_scene = map_scene_link.instantiate()

@@ -208,7 +208,7 @@ func mutate_network(mutation_rate : float = 0.01, mutation_chance: float = 0.1) 
 	#print("mutated weights: ", weights)
 	return
 
-func copy_from(other: FeedForwardNeuralNetwork, do_compute_pipeline_initialisation : bool = true) -> void:
+func copy_from(other: FeedForwardNeuralNetwork, do_compute_pipeline_initialisation : bool = false) -> void:
 	var architecture_changed := layers != other.layers
 	
 	# --- Copy layers ---

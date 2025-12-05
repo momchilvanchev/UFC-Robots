@@ -1,6 +1,43 @@
-[gd_scene load_steps=2 format=3 uid="uid://cvbrqhljosfog"]
+[gd_scene load_steps=6 format=3 uid="uid://cvbrqhljosfog"]
 
-[ext_resource type="Script" uid="uid://bbsuqx5w5yal7" path="res://scenes/fighter.gd" id="1_a4q2m"]
+[ext_resource type="Script" uid="uid://1nfpcyjqgpuc" path="res://scripts/fighter.gd" id="1_a4q2m"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_a4q2m"]
+radius = 0.3
+height = 1.0
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_a4q2m"]
+radius = 0.3
+height = 1.0
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1q4ya"]
+radius = 0.2
+height = 0.4
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_38ety"]
+radius = 0.2
+height = 0.4
 
 [node name="Fighter" type="Node3D"]
 script = ExtResource("1_a4q2m")
+
+[node name="Torso" type="RigidBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Torso"]
+shape = SubResource("CapsuleShape3D_a4q2m")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Torso"]
+mesh = SubResource("CapsuleMesh_a4q2m")
+
+[node name="Head" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75280595, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Head"]
+shape = SubResource("CapsuleShape3D_1q4ya")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Head"]
+mesh = SubResource("CapsuleMesh_38ety")
+
+[node name="Generic6DOFJoint3D" type="Generic6DOFJoint3D" parent="."]
+node_a = NodePath("../Torso")
+node_b = NodePath("../Head")
