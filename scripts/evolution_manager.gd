@@ -19,8 +19,9 @@ func _ready() -> void:
 	var fighter1 = fighter_scene.instantiate()
 	fighter1.position.y = 5
 	fighter1.position.z = 5
-	fighter1.rotation.x = 10
+	fighter1.rotation_degrees.x = 10
 	add_child(fighter1)
+	Global.fighter1 = fighter1
 	return
 	ffnn1 = FeedForwardNeuralNetwork.new()
 	ffnn2 = FeedForwardNeuralNetwork.new()

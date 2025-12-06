@@ -1,43 +1,84 @@
-[gd_scene load_steps=6 format=3 uid="uid://cvbrqhljosfog"]
+[gd_scene load_steps=8 format=3 uid="uid://cvbrqhljosfog"]
 
 [ext_resource type="Script" uid="uid://1nfpcyjqgpuc" path="res://scripts/fighter.gd" id="1_a4q2m"]
 
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_a4q2m"]
-radius = 0.3
-height = 1.0
+[sub_resource type="BoxMesh" id="BoxMesh_1q4ya"]
+size = Vector3(0.5, 1.8, 0.5)
 
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_a4q2m"]
-radius = 0.3
-height = 1.0
+[sub_resource type="BoxMesh" id="BoxMesh_a4q2m"]
+size = Vector3(0.2, 0.25, 0.2)
 
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1q4ya"]
-radius = 0.2
-height = 0.4
+[sub_resource type="BoxShape3D" id="BoxShape3D_1q4ya"]
+size = Vector3(0.2, 0.25, 0.2)
 
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_38ety"]
-radius = 0.2
-height = 0.4
+[sub_resource type="BoxMesh" id="BoxMesh_38ety"]
 
-[node name="Fighter" type="Node3D"]
+[sub_resource type="BoxMesh" id="BoxMesh_rsphg"]
+size = Vector3(0.07, 0.1, 0.07)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_tlqsq"]
+size = Vector3(0.07, 0.1, 0.07)
+
+[node name="Fighter" type="Node3D" node_paths=PackedStringArray("head")]
 script = ExtResource("1_a4q2m")
+head = NodePath("Head")
 
-[node name="Torso" type="RigidBody3D" parent="."]
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Torso"]
-shape = SubResource("CapsuleShape3D_a4q2m")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Torso"]
-mesh = SubResource("CapsuleMesh_a4q2m")
+[node name="measuring stick" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9117, -1.8269235)
+mesh = SubResource("BoxMesh_1q4ya")
 
 [node name="Head" type="RigidBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75280595, 0)
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Head"]
-shape = SubResource("CapsuleShape3D_1q4ya")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6019175, 0)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Head"]
-mesh = SubResource("CapsuleMesh_38ety")
+mesh = SubResource("BoxMesh_a4q2m")
 
-[node name="Generic6DOFJoint3D" type="Generic6DOFJoint3D" parent="."]
-node_a = NodePath("../Torso")
-node_b = NodePath("../Head")
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Head"]
+shape = SubResource("BoxShape3D_1q4ya")
+
+[node name="Torso" type="RigidBody3D" parent="."]
+visible = false
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Torso"]
+mesh = SubResource("BoxMesh_38ety")
+
+[node name="Pelvis" type="RigidBody3D" parent="."]
+
+[node name="LeftUpperLeg" type="RigidBody3D" parent="."]
+
+[node name="RightUpperLeg" type="RigidBody3D" parent="."]
+
+[node name="LeftLowerLeg" type="RigidBody3D" parent="."]
+
+[node name="RightLowerLeg" type="RigidBody3D" parent="."]
+
+[node name="LeftFoot" type="RigidBody3D" parent="."]
+
+[node name="RightFoot" type="RigidBody3D" parent="."]
+
+[node name="LeftUpperArm" type="RigidBody3D" parent="."]
+
+[node name="RightUpperArm" type="RigidBody3D" parent="."]
+
+[node name="LeftLowerArm" type="RigidBody3D" parent="."]
+
+[node name="RightLowerArm" type="RigidBody3D" parent="."]
+
+[node name="LeftFist" type="RigidBody3D" parent="."]
+
+[node name="RightFist" type="RigidBody3D" parent="."]
+
+[node name="Neck" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4200706, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Neck"]
+mesh = SubResource("BoxMesh_rsphg")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Neck"]
+shape = SubResource("BoxShape3D_tlqsq")
+
+[node name="Head x Neck" type="Generic6DOFJoint3D" parent="."]
+node_a = NodePath("../Head")
+node_b = NodePath("../Neck")
+angular_motor_y/enabled = true
+angular_motor_y/target_velocity = 0.024783675

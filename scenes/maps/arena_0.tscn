@@ -10,8 +10,11 @@ ground_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
 sky_material = SubResource("ProceduralSkyMaterial_eq5y2")
 
 [sub_resource type="Environment" id="Environment_ok1ej"]
-background_mode = 1
+background_mode = 2
 sky = SubResource("Sky_3thbl")
+glow_enabled = true
+glow_strength = 1.1
+glow_bloom = 0.1
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_eq5y2"]
 albedo_color = Color(0.006885395, 0.0068853963, 0.006885395, 1)
@@ -30,7 +33,7 @@ cap_bottom = false
 [sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_eq5y2"]
 
 [sub_resource type="ViewportTexture" id="ViewportTexture_3thbl"]
-viewport_path = NodePath("SubViewport")
+viewport_path = NodePath("Arena/TV Chandelier/SubViewport")
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ok1ej"]
 resource_local_to_scene = true
@@ -46,8 +49,10 @@ size = Vector3(9.9, 5, 9.9)
 [sub_resource type="CylinderMesh" id="CylinderMesh_ok1ej"]
 height = 10.0
 
-[node name="Arena0" type="Node3D"]
+[node name="Arena0" type="Node3D" node_paths=PackedStringArray("main_camera", "octagon_mesh_instance")]
 script = ExtResource("1_3thbl")
+main_camera = NodePath("MainCamera")
+octagon_mesh_instance = NodePath("Arena/Octagon/OctagonMesh")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_ok1ej")
@@ -56,74 +61,76 @@ environment = SubResource("Environment_ok1ej")
 transform = Transform3D(-0.76828355, -0.6180084, -0.16675134, 0, -0.26050434, 0.9654727, -0.64010966, 0.7417568, 0.20014119, 0, 0, 0)
 shadow_enabled = true
 
-[node name="Floor" type="MeshInstance3D" parent="."]
-material_override = SubResource("StandardMaterial3D_eq5y2")
-mesh = SubResource("PlaneMesh_3thbl")
-
-[node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(0.77139145, -0.1733006, 0.6123089, 1.8580487e-09, 0.96220374, 0.2723306, -0.636361, -0.21007352, 0.7422357, 7.9727945, 7.33379, 9.813765)
+[node name="MainCamera" type="Camera3D" parent="."]
+transform = Transform3D(0.66653246, -0.67672634, 0.31269142, 0, 0.41945204, 0.9077775, -0.745476, -0.60506314, 0.2795784, 9.612515, 8.646566, 13.4401245)
 fov = 50.0
 
-[node name="Octagon" type="StaticBody3D" parent="."]
+[node name="Arena" type="Node3D" parent="."]
+
+[node name="Floor" type="MeshInstance3D" parent="Arena"]
+material_override = SubResource("StandardMaterial3D_eq5y2")
+mesh = SubResource("PlaneMesh_3thbl")
+skeleton = NodePath("../..")
+
+[node name="Octagon" type="StaticBody3D" parent="Arena"]
 transform = Transform3D(0.9238795, 0, 0.38268346, 0, 1, 0, -0.38268346, 0, 0.9238795, 0, 1, 0)
 
-[node name="OctagonMesh" type="MeshInstance3D" parent="Octagon"]
+[node name="OctagonMesh" type="MeshInstance3D" parent="Arena/Octagon"]
 material_override = SubResource("StandardMaterial3D_3thbl")
 mesh = SubResource("CylinderMesh_3thbl")
 skeleton = NodePath("")
 
-[node name="Decal" type="Decal" parent="Octagon/OctagonMesh"]
+[node name="Decal" type="Decal" parent="Arena/Octagon/OctagonMesh"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 size = Vector3(20, 0.001, 20)
 
-[node name="FloorCollider" type="CollisionShape3D" parent="Octagon"]
+[node name="FloorCollider" type="CollisionShape3D" parent="Arena/Octagon"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 shape = SubResource("WorldBoundaryShape3D_eq5y2")
 
-[node name="SubViewport" type="SubViewport" parent="."]
-size = Vector2i(1024, 512)
-
-[node name="subviewport_camera" type="Camera3D" parent="SubViewport"]
-transform = Transform3D(0.26638055, 0, 0.96386796, 0, 1, 0, -0.96386796, 0, 0.26638055, 10.757699, 3.1173325, 6.8490105)
-current = true
-fov = 113.6
-
-[node name="TV Chandelier" type="Node3D" parent="."]
+[node name="TV Chandelier" type="Node3D" parent="Arena"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 30, 0)
 
-[node name="screen_1" type="MeshInstance3D" parent="TV Chandelier"]
+[node name="screen_1" type="MeshInstance3D" parent="Arena/TV Chandelier"]
 transform = Transform3D(0.99999994, 0, 0, 0, 1, 0, 0, 0, 0.99999994, 0, 0, 5)
 material_override = SubResource("StandardMaterial3D_ok1ej")
 cast_shadow = 0
 mesh = SubResource("QuadMesh_3thbl")
-skeleton = NodePath("../../SubViewport")
+skeleton = NodePath("../SubViewport")
 
-[node name="screen_2" type="MeshInstance3D" parent="TV Chandelier"]
+[node name="screen_2" type="MeshInstance3D" parent="Arena/TV Chandelier"]
 transform = Transform3D(-0.99999994, 0, -8.742277e-08, 0, 1, 0, 8.742277e-08, 0, -0.99999994, 0, 0, -5)
 material_override = SubResource("StandardMaterial3D_ok1ej")
 cast_shadow = 0
 mesh = SubResource("QuadMesh_3thbl")
-skeleton = NodePath("../../SubViewport")
+skeleton = NodePath("../SubViewport")
 
-[node name="screen_3" type="MeshInstance3D" parent="TV Chandelier"]
+[node name="screen_3" type="MeshInstance3D" parent="Arena/TV Chandelier"]
 transform = Transform3D(-4.3711385e-08, 0, -0.9999999, 0, 1, 0, 0.9999999, 0, -4.3711385e-08, -5, 0, 0)
 material_override = SubResource("StandardMaterial3D_ok1ej")
 cast_shadow = 0
 mesh = SubResource("QuadMesh_3thbl")
-skeleton = NodePath("../../SubViewport")
+skeleton = NodePath("../SubViewport")
 
-[node name="screen_4" type="MeshInstance3D" parent="TV Chandelier"]
+[node name="screen_4" type="MeshInstance3D" parent="Arena/TV Chandelier"]
 transform = Transform3D(-4.3711385e-08, 0, 0.9999999, 0, 1, 0, -0.9999999, 0, -4.3711385e-08, 5, 0, 0)
 material_override = SubResource("StandardMaterial3D_ok1ej")
 cast_shadow = 0
 mesh = SubResource("QuadMesh_3thbl")
-skeleton = NodePath("../../SubViewport")
+skeleton = NodePath("../SubViewport")
 
-[node name="tv_frame_box" type="MeshInstance3D" parent="TV Chandelier"]
+[node name="tv_frame_box" type="MeshInstance3D" parent="Arena/TV Chandelier"]
 cast_shadow = 0
 mesh = SubResource("BoxMesh_3thbl")
 
-[node name="tv_frame_rope" type="MeshInstance3D" parent="TV Chandelier"]
+[node name="tv_frame_rope" type="MeshInstance3D" parent="Arena/TV Chandelier"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, 0)
 cast_shadow = 0
 mesh = SubResource("CylinderMesh_ok1ej")
+
+[node name="SubViewport" type="SubViewport" parent="Arena/TV Chandelier"]
+size = Vector2i(1024, 512)
+
+[node name="subviewport_camera" type="Camera3D" parent="Arena/TV Chandelier/SubViewport"]
+transform = Transform3D(0.26638055, 0, 0.96386796, 0, 1, 0, -0.96386796, 0, 0.26638055, 14.948308, 7.1123066, 10.6788025)
+current = true

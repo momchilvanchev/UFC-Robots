@@ -9,6 +9,9 @@ var shader_file : Resource
 var shader_spirv: RDShaderSPIRV
 var shader : RID
 var pipeline : RID
+
+var fighter1 : Fighter
+var fighter2 : Fighter
 func _ready() -> void:
 	rendering_device = create_new_rendering_device()
 	#print(rendering_device)
